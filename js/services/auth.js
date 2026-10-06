@@ -19,9 +19,9 @@ const ERRORS = {
 };
 const GENERIC = 'Login failed. Try again.';
 
-export const ROLES = { admin: 'Owner', manager: 'Manager', cashier: 'Cashier' };
+export const ROLES = { admin: 'Owner', manager: 'Pharmacist', cashier: 'Counter staff' };
 
-const CASHIER = ['sale.create', 'party.edit', 'voucher.create', 'reports.view'];
+const CASHIER = ['sale.create', 'party.edit', 'voucher.create', 'reports.view', 'demand.manage'];
 const MANAGER = [...CASHIER, 'sale.edit', 'sale.void', 'sale.return', 'purchase.manage', 'product.edit', 'product.delete',
   'party.delete', 'voucher.void', 'account.manage', 'stock.adjust', 'reports.profit', 'settings.manage', 'backup.export'];
 const PERMISSIONS = { cashier: CASHIER, manager: MANAGER, admin: ['*'] };
@@ -103,6 +103,16 @@ export async function login(username, password) {
   const session = { token: data?.token, expiresAt: Number(data?.expiresAt), username: data?.username };
   if (data?.role) session.role = data.role;
   if (!isValid(session)) throw new AppError(GENERIC);
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  current = toUser(session);
+  return current;
+}
+
+// Demo sign-in: ONLY on a local development host (localhost / 127.0.0.1). It never works on a real domain.
+export const demoAvailable = () => ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+export function demoLogin() {
+  if (!demoAvailable()) throw new AppError('Demo mode is only available on localhost.');
+  const session = { token: 'demo', expiresAt: Date.now() + 12 * 3600 * 1000, username: 'demo' };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   current = toUser(session);
   return current;

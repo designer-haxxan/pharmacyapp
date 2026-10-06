@@ -2,34 +2,35 @@
 import { CONFIG } from '../config.js';
 
 export const DB_NAME = `${CONFIG.APP_ID}_pos`;
-// Database name used by older builds (shared with other apps on the same origin). Never modified; only read on import.
-export const LEGACY_DB_NAME = 'saleapp_pos';
 export const DB_VERSION = 1;
 
 // Stores that make up the business data (included in backups).
 export const DATA_STORES = [
-  'categories', 'products', 'customers', 'suppliers', 'accounts',
+  'categories', 'products', 'batches', 'customers', 'suppliers', 'accounts',
   'sales', 'saleItems', 'purchases', 'purchaseItems', 'saleReturns', 'purchaseReturns',
-  'vouchers', 'entries', 'stockMoves', 'adjustments', 'holds', 'auditLog', 'meta',
+  'vouchers', 'entries', 'stockMoves', 'adjustments', 'demands', 'holds', 'auditLog', 'meta',
 ];
 
 const STORES = {
   meta: { keyPath: 'key', indexes: {} },
   categories: { indexes: { nameLc: 'nameLc' } },
-  products: { indexes: { nameLc: 'nameLc', barcode: 'barcode', sku: 'sku', categoryId: 'categoryId' } },
+  products: { indexes: { nameLc: 'nameLc', barcode: 'barcode', sku: 'sku', categoryId: 'categoryId', generic: 'genericLc' } },
+  // One row per received lot of a medicine (purchase line, opening stock or stock-in adjustment).
+  batches: { indexes: { productId: 'productId', expiry: 'expiry', batchNo: 'batchNo', srcId: 'srcId', prodExp: [['productId', 'expiry'], false] } },
   customers: { indexes: { nameLc: 'nameLc', phone: 'phone' } },
   suppliers: { indexes: { nameLc: 'nameLc', phone: 'phone' } },
   accounts: { indexes: { type: 'type' } },
   sales: { indexes: { number: ['number', true], date: 'date', customerId: 'customerId' } },
-  saleItems: { indexes: { saleId: 'saleId', productId: 'productId', date: 'date' } },
+  saleItems: { indexes: { saleId: 'saleId', productId: 'productId', date: 'date', batchId: 'batchId', batchNo: 'batchNo' } },
   purchases: { indexes: { number: ['number', true], date: 'date', supplierId: 'supplierId' } },
-  purchaseItems: { indexes: { purchaseId: 'purchaseId', productId: 'productId', date: 'date' } },
+  purchaseItems: { indexes: { purchaseId: 'purchaseId', productId: 'productId', date: 'date', batchId: 'batchId' } },
   saleReturns: { indexes: { number: ['number', true], date: 'date', saleId: 'saleId', customerId: 'customerId' } },
   purchaseReturns: { indexes: { number: ['number', true], date: 'date', purchaseId: 'purchaseId', supplierId: 'supplierId' } },
   vouchers: { indexes: { number: ['number', true], date: 'date', type: 'type' } },
   entries: { indexes: { accountId: 'accountId', txnId: 'txnId', date: 'date', acctDate: [['accountId', 'date'], false] } },
-  stockMoves: { indexes: { productId: 'productId', refId: 'refId', date: 'date', prodDate: [['productId', 'date'], false] } },
+  stockMoves: { indexes: { productId: 'productId', refId: 'refId', batchId: 'batchId', date: 'date', prodDate: [['productId', 'date'], false] } },
   adjustments: { indexes: { number: ['number', true], date: 'date' } },
+  demands: { indexes: { status: 'status', productId: 'productId', createdAt: 'createdAt' } },
   holds: { indexes: { createdAt: 'createdAt' } },
   auditLog: { indexes: { at: 'at' } },
 };

@@ -1,6 +1,7 @@
 // Reusable view fragments: document links, ledger tables, date filters, balance formatting.
 import { esc, fmtNum, fmtDate, today, monthStart } from './utils.js';
 import { getSettings } from './settings.js';
+import { t } from './i18n.js';
 
 export const cur = () => getSettings().currency;
 export const money = (n) => `${esc(cur())} ${fmtNum(n)}`;
@@ -26,16 +27,16 @@ export function balText(balance, debitNormal = true) {
 
 export function dateFilter(from, to, extra = '') {
   return `<form class="filters date-filter">
-    <div><label class="form-label small mb-0">From</label><input type="date" name="from" class="form-control form-control-sm" value="${esc(from)}"></div>
-    <div><label class="form-label small mb-0">To</label><input type="date" name="to" class="form-control form-control-sm" value="${esc(to)}"></div>
+    <div><label class="form-label small mb-0">${t('From')}</label><input type="date" name="from" class="form-control form-control-sm" value="${esc(from)}"></div>
+    <div><label class="form-label small mb-0">${t('To')}</label><input type="date" name="to" class="form-control form-control-sm" value="${esc(to)}"></div>
     ${extra}
     <div class="d-flex align-items-end gap-1" style="flex:0 0 auto">
       <div class="btn-group btn-group-sm">
-        <button type="button" class="btn btn-outline-secondary" data-range="today">Today</button>
-        <button type="button" class="btn btn-outline-secondary" data-range="month">Month</button>
-        <button type="button" class="btn btn-outline-secondary" data-range="all">All</button>
+        <button type="button" class="btn btn-outline-secondary" data-range="today">${t('Today')}</button>
+        <button type="button" class="btn btn-outline-secondary" data-range="month">${t('Month')}</button>
+        <button type="button" class="btn btn-outline-secondary" data-range="all">${t('All')}</button>
       </div>
-      <button class="btn btn-primary btn-sm">Apply</button>
+      <button class="btn btn-primary btn-sm">${t('Apply')}</button>
     </div></form>`;
 }
 export function rangeFor(key) {
@@ -61,17 +62,17 @@ export function bindDateFilter($root, cb) {
 export function ledgerTable(led, { debitNormal = true, showAccount = false, accountName = null } = {}) {
   const rows = led.rows.map((e) => `<tr>
       <td class="text-nowrap">${fmtDate(e.date)}</td>
-      <td class="text-nowrap">${refLink(e.refType, e.txnId, e.refNo || '')}<div class="small text-body-secondary">${esc(REF_LABELS[e.refType] || e.refType)}</div></td>
+      <td class="text-nowrap">${refLink(e.refType, e.txnId, e.refNo || '')}<div class="small text-body-secondary">${esc(t(REF_LABELS[e.refType] || e.refType))}</div></td>
       ${showAccount ? `<td>${esc(accountName ? accountName(e.accountId) : e.accountId)}</td>` : ''}
       <td class="small">${esc(e.memo)}</td>
       <td class="num">${e.debit ? fmtNum(e.debit) : ''}</td>
       <td class="num">${e.credit ? fmtNum(e.credit) : ''}</td>
       <td class="num fw-semibold">${balText(e.running, debitNormal)}</td></tr>`).join('');
   return `<div class="table-responsive"><table class="table table-sm table-hover table-report align-middle mb-0">
-    <thead><tr><th>Date</th><th>Ref</th>${showAccount ? '<th>Account</th>' : ''}<th>Details</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Balance</th></tr></thead>
-    <tbody><tr class="table-light"><td colspan="${showAccount ? 6 : 5}">Opening balance</td><td class="num fw-semibold">${balText(led.opening, debitNormal)}</td></tr>
-    ${rows || `<tr><td colspan="${showAccount ? 7 : 6}" class="text-center text-body-secondary py-3">No transactions in this period</td></tr>`}</tbody>
-    <tfoot><tr class="fw-semibold"><td colspan="${showAccount ? 4 : 3}">Totals / closing</td><td class="num">${fmtNum(led.debit)}</td><td class="num">${fmtNum(led.credit)}</td><td class="num">${balText(led.closing, debitNormal)}</td></tr></tfoot>
+    <thead><tr><th>${t('Date')}</th><th>${t('Ref')}</th>${showAccount ? `<th>${t('Account')}</th>` : ''}<th>${t('Details')}</th><th class="num">${t('Debit (Dr)')}</th><th class="num">${t('Credit (Cr)')}</th><th class="num">${t('Balance')}</th></tr></thead>
+    <tbody><tr class="table-light"><td colspan="${showAccount ? 6 : 5}">${t('Opening balance')}</td><td class="num fw-semibold">${balText(led.opening, debitNormal)}</td></tr>
+    ${rows || `<tr><td colspan="${showAccount ? 7 : 6}" class="text-center text-body-secondary py-3">${t('No transactions in this period')}</td></tr>`}</tbody>
+    <tfoot><tr class="fw-semibold"><td colspan="${showAccount ? 4 : 3}">${t('Totals / closing')}</td><td class="num">${fmtNum(led.debit)}</td><td class="num">${fmtNum(led.credit)}</td><td class="num">${balText(led.closing, debitNormal)}</td></tr></tfoot>
     </table></div>`;
 }
 
@@ -83,7 +84,7 @@ export function pager($container, items, rowFn, pageSize = 50, empty = '') {
     shown += chunk.length;
     $container.find('.pager-more').remove();
     $container.append(chunk.map(rowFn).join(''));
-    if (shown < items.length) $container.append(`<button class="list-row pager-more justify-content-center text-primary">Show more (${items.length - shown} remaining)</button>`);
+    if (shown < items.length) $container.append(`<button class="list-row pager-more justify-content-center text-primary">${t('Show more')} (${items.length - shown} ${t('remaining')})</button>`);
   };
   $container.empty();
   if (!items.length) { $container.html(empty); return; }

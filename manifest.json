@@ -1,15 +1,16 @@
 {
-  "name": "SaleAPP POS",
-  "short_name": "SaleAPP",
-  "description": "Offline-first point of sale with sales, purchases, stock, accounts and reports.",
+  "name": "Shifa Pharmacy POS",
+  "short_name": "Shifa Pharmacy",
+  "description": "Pharmacy point of sale for Pakistan: batch & expiry tracking, order list, Rx register, Urdu receipts. Works offline.",
   "id": "./index.html",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f0c29",
-  "theme_color": "#4f46e5",
-  "categories": ["business", "finance", "productivity"],
+  "background_color": "#effaf5",
+  "theme_color": "#0f9d73",
+  "lang": "en",
+  "categories": ["business", "medical", "productivity"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
@@ -17,6 +18,7 @@
   ],
   "shortcuts": [
     { "name": "New sale", "url": "./index.html#/pos", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Dashboard", "url": "./index.html#/dashboard", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Expiry", "url": "./index.html#/expiry", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Order list", "url": "./index.html#/demand", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

@@ -1,109 +1,123 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" dir="ltr" data-bs-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Offline-first point of sale with sales, purchases, stock, accounts and reports.">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Pharmacy point of sale for Pakistan: batch-wise stock, expiry tracking, demand list, Rx register, Urdu receipts. Works offline.">
+  <meta name="theme-color" content="#effaf5">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https://eposwala.com https://cdn.jsdelivr.net; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SaleAPP POS">
+  <meta name="apple-mobile-web-app-title" content="Shifa Pharmacy">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" disabled>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.1.0/index.css">
   <link rel="stylesheet" href="css/app.css">
-  <title>SaleAPP POS</title>
+  <script src="js/boot-lang.js"></script>
+  <title>Shifa Pharmacy POS</title>
 </head>
 <body>
   <!-- Splash / loading screen -->
   <div id="splash">
-    <div class="splash-logo"><img src="icons/icon-192.png" alt=""></div>
-    <div class="splash-name mt-3">SaleAPP POS</div>
-    <div class="splash-bar" role="status"><span class="visually-hidden">Loading</span></div>
+    <div class="splash-logo"><i class="bi bi-plus-lg"></i></div>
+    <div class="splash-name mt-3">Shifa Pharmacy POS</div>
+    <svg class="splash-ecg" viewBox="0 0 220 40" aria-hidden="true"><path d="M0 22 H70 L80 22 L88 6 L98 36 L108 14 L114 22 H220" /></svg>
     <div id="splash-error" class="text-danger small mt-3 px-4 text-center"></div>
   </div>
 
   <!-- Login -->
   <div id="view-login" class="d-none">
     <div class="auth">
-      <div class="auth-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><div class="grid-lines"></div></div>
+      <div class="auth-bg" aria-hidden="true">
+        <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+        <i class="bi bi-capsule bg-pill p1"></i><i class="bi bi-capsule-pill bg-pill p2"></i><i class="bi bi-plus-lg bg-pill p3"></i>
+        <i class="bi bi-capsule bg-pill p4"></i><i class="bi bi-heart-pulse bg-pill p5"></i><i class="bi bi-plus-lg bg-pill p6"></i>
+      </div>
+      <button type="button" class="lang-switch lang-login" data-lang-toggle aria-label="Language"><i class="bi bi-translate"></i><span class="lang-label"></span></button>
       <div class="auth-inner">
         <section class="auth-hero">
           <div class="brand-row">
-            <div class="brand-mark"><img src="icons/icon-192.png" alt=""></div>
-            <div><div class="name">SaleAPP POS</div><div class="tag">Point of Sale · Inventory · Accounts</div></div>
+            <div class="brand-mark"><i class="bi bi-plus-lg"></i></div>
+            <div><div class="name">Shifa Pharmacy POS</div><div class="tag ur-line">شفا فارمیسی</div></div>
           </div>
-          <h1>Run your whole business <span class="grad">from one app.</span></h1>
-          <p class="lead-sm">Sell, buy, track stock and keep your accounts — for any shop, wholesaler or distributor. Works even without internet.</p>
+          <h1><span data-i18n>Run your pharmacy</span> <span class="grad" data-i18n>with confidence.</span></h1>
+          <p class="lead-sm" data-i18n>Sell, buy, track every batch and expiry date, and never run out of medicine. Made for Pakistani pharmacies. Works even without internet.</p>
           <ul class="feature-chips">
-            <li><i class="bi bi-wifi-off"></i>Works offline</li>
-            <li><i class="bi bi-box-seam"></i>Inventory</li>
-            <li><i class="bi bi-journal-check"></i>Accounts &amp; ledgers</li>
-            <li><i class="bi bi-upc-scan"></i>Barcode</li>
-            <li><i class="bi bi-printer"></i>Bluetooth receipts</li>
-            <li><i class="bi bi-translate"></i><span class="ur-chip">اردو رسید</span></li>
+            <li><i class="bi bi-calendar2-x"></i><span data-i18n>Batch &amp; expiry</span></li>
+            <li><i class="bi bi-clipboard2-pulse"></i><span data-i18n>Demand list</span></li>
+            <li><i class="bi bi-prescription2"></i><span data-i18n>Rx register</span></li>
+            <li><i class="bi bi-wifi-off"></i><span data-i18n>Works offline</span></li>
+            <li><i class="bi bi-printer"></i><span data-i18n>Urdu receipts</span></li>
           </ul>
           <div class="hero-art" aria-hidden="true">
-            <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset="1" stop-color="#ffffff" stop-opacity=".06"/></linearGradient>
-                <linearGradient id="hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5b4fc"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
-                <linearGradient id="hg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+                <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#059669"/></linearGradient>
+                <linearGradient id="gB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d1fae5"/></linearGradient>
+                <linearGradient id="gC" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#0891b2"/></linearGradient>
+                <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient>
               </defs>
+              <!-- medicine box -->
               <g class="float-a">
-                <rect x="40" y="30" width="330" height="220" rx="22" fill="url(#hg1)" stroke="rgba(255,255,255,.25)"/>
-                <circle cx="66" cy="54" r="5" fill="#f87171"/><circle cx="82" cy="54" r="5" fill="#fbbf24"/><circle cx="98" cy="54" r="5" fill="#34d399"/>
-                <rect x="64" y="78" width="120" height="12" rx="6" fill="rgba(255,255,255,.55)"/>
-                <rect x="64" y="98" width="80" height="22" rx="8" fill="#fff"/>
-                <rect class="bar" x="70"  y="170" width="26" height="54"  rx="6" fill="url(#hg2)" style="animation-delay:.1s"/>
-                <rect class="bar" x="110" y="150" width="26" height="74"  rx="6" fill="url(#hg2)" style="animation-delay:.2s"/>
-                <rect class="bar" x="150" y="180" width="26" height="44"  rx="6" fill="url(#hg2)" style="animation-delay:.3s"/>
-                <rect class="bar" x="190" y="130" width="26" height="94"  rx="6" fill="url(#hg2)" style="animation-delay:.4s"/>
-                <rect class="bar" x="230" y="145" width="26" height="79"  rx="6" fill="url(#hg2)" style="animation-delay:.5s"/>
-                <rect class="bar" x="270" y="110" width="26" height="114" rx="6" fill="url(#hg3)" style="animation-delay:.6s"/>
-                <rect class="bar" x="310" y="125" width="26" height="99"  rx="6" fill="url(#hg2)" style="animation-delay:.7s"/>
+                <rect x="40" y="70" width="250" height="190" rx="22" fill="url(#gD)" stroke="rgba(255,255,255,.35)"/>
+                <rect x="62" y="92" width="206" height="14" rx="7" fill="rgba(255,255,255,.6)"/>
+                <g class="pillrow">
+                  <rect x="62" y="122" width="206" height="46" rx="10" fill="rgba(255,255,255,.18)"/>
+                  <circle class="tab" cx="92" cy="145" r="14" fill="#fff"/><circle class="tab" cx="130" cy="145" r="14" fill="#fff" style="animation-delay:.15s"/>
+                  <circle class="tab" cx="168" cy="145" r="14" fill="#fff" style="animation-delay:.3s"/><circle class="tab" cx="206" cy="145" r="14" fill="#fff" style="animation-delay:.45s"/>
+                  <circle class="tab" cx="244" cy="145" r="14" fill="#fff" style="animation-delay:.6s"/>
+                  <rect x="62" y="180" width="206" height="46" rx="10" fill="rgba(255,255,255,.18)"/>
+                  <circle class="tab" cx="92" cy="203" r="14" fill="#a7f3d0" style="animation-delay:.2s"/><circle class="tab" cx="130" cy="203" r="14" fill="#a7f3d0" style="animation-delay:.35s"/>
+                  <circle class="tab" cx="168" cy="203" r="14" fill="#a7f3d0" style="animation-delay:.5s"/><circle class="tab" cx="206" cy="203" r="14" fill="#a7f3d0" style="animation-delay:.65s"/>
+                </g>
               </g>
-              <g class="float-b">
-                <path d="M392 70 h96 a10 10 0 0 1 10 10 v170 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 V80 a10 10 0 0 1 10 -10z" fill="#fff"/>
-                <rect x="410" y="92" width="64" height="9" rx="4.5" fill="#6366f1"/>
-                <rect x="404" y="114" width="76" height="6" rx="3" fill="#e5e7eb"/><rect x="404" y="128" width="58" height="6" rx="3" fill="#e5e7eb"/>
-                <rect x="404" y="142" width="70" height="6" rx="3" fill="#e5e7eb"/><rect x="404" y="156" width="48" height="6" rx="3" fill="#e5e7eb"/>
-                <rect x="404" y="178" width="76" height="2" fill="#c7d2fe"/>
-                <rect x="404" y="190" width="40" height="10" rx="5" fill="#111827"/><rect x="452" y="190" width="28" height="10" rx="5" fill="#16a34a"/>
-                <g transform="translate(410 208)"><rect width="2" height="18" fill="#111827"/><rect x="5" width="1" height="18" fill="#111827"/><rect x="9" width="3" height="18" fill="#111827"/><rect x="15" width="1" height="18" fill="#111827"/><rect x="19" width="2" height="18" fill="#111827"/><rect x="24" width="1" height="18" fill="#111827"/><rect x="28" width="3" height="18" fill="#111827"/><rect x="34" width="2" height="18" fill="#111827"/><rect x="39" width="1" height="18" fill="#111827"/><rect x="43" width="3" height="18" fill="#111827"/><rect x="49" width="2" height="18" fill="#111827"/><rect x="54" width="1" height="18" fill="#111827"/><rect x="58" width="3" height="18" fill="#111827"/></g>
+              <!-- big capsule -->
+              <g class="float-b capsule-spin" transform="translate(330 70)">
+                <g transform="rotate(-35 80 40)">
+                  <path d="M40 0 h40 v80 h-40 a40 40 0 0 1 0 -80z" fill="url(#gA)"/>
+                  <path d="M80 0 h40 a40 40 0 0 1 0 80 h-40z" fill="url(#gB)"/>
+                  <rect x="48" y="12" width="64" height="9" rx="4.5" fill="#fff" opacity=".35"/>
+                </g>
               </g>
-              <g class="float-b"><circle cx="34" cy="272" r="26" fill="#fbbf24"/><circle cx="34" cy="272" r="18" fill="none" stroke="#fde68a" stroke-width="3"/><text x="34" y="279" text-anchor="middle" font-size="18" font-weight="800" fill="#92400e">Rs</text></g>
-              <g class="float-a"><rect x="300" y="262" width="62" height="50" rx="8" fill="#22d3ee"/><path d="M300 278 h62" stroke="#0e7490" stroke-width="3"/><rect x="322" y="262" width="18" height="16" fill="#67e8f9"/></g>
+              <!-- medical cross badge -->
+              <g class="float-a" transform="translate(372 196)">
+                <rect width="96" height="96" rx="26" fill="url(#gC)"/>
+                <path d="M40 22 h16 v18 h18 v16 h-18 v18 h-16 v-18 h-18 v-16 h18z" fill="#fff"/>
+              </g>
+              <!-- ecg -->
+              <path class="ecg" d="M20 300 H120 L136 300 L150 268 L170 322 L190 284 L200 300 H330 L346 300 L360 276 L376 316 L390 296 L400 300 H500" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
             </svg>
           </div>
         </section>
 
         <section class="auth-card" aria-labelledby="login-title">
-          <h2 id="login-title">Welcome back</h2>
-          <div class="sub">Sign in to your shop to continue</div>
+          <div class="auth-card-icon"><i class="bi bi-shield-plus"></i></div>
+          <h2 id="login-title" data-i18n>Welcome back</h2>
+          <div class="sub" data-i18n>Sign in to your pharmacy to continue</div>
           <div id="login-notice" class="alert alert-warning small d-none"></div>
           <form id="login-form" novalidate>
             <div class="field">
               <input type="text" id="login-username" name="username" placeholder=" " autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
               <i class="bi bi-person lead-icon"></i>
-              <label for="login-username">Username</label>
+              <label for="login-username" data-i18n>Username</label>
             </div>
             <div class="field">
               <input type="password" id="login-password" name="password" placeholder=" " autocomplete="current-password" required>
               <i class="bi bi-lock lead-icon"></i>
-              <label for="login-password">Password</label>
+              <label for="login-password" data-i18n>Password</label>
               <button type="button" class="btn btn-link field-action" id="toggle-pw" aria-label="Show password"><i class="bi bi-eye"></i></button>
             </div>
             <div id="login-error" class="alert alert-danger py-2 small d-none"></div>
-            <button type="submit" class="btn btn-grad btn-login w-100" id="login-btn"><span>Sign in</span><i class="bi bi-arrow-right"></i></button>
+            <button type="submit" class="btn btn-grad btn-login w-100" id="login-btn"><span data-i18n>Sign in</span><i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn btn-outline-secondary w-100 mt-2 d-none" id="demo-btn"><i class="bi bi-flask me-1"></i>Demo (this computer only)</button>
           </form>
           <div class="auth-foot" id="login-conn"></div>
-          <div class="text-center small mt-2" style="color:#8a8fa3">Internet is needed to sign in. After that the app works offline.</div>
+          <div class="text-center small mt-2 auth-hint" data-i18n>Internet is needed to sign in. After that the app works offline.</div>
         </section>
       </div>
     </div>
@@ -112,39 +126,40 @@
   <!-- Application -->
   <div id="view-app" class="d-none">
     <aside id="sidebar" class="d-none d-lg-flex flex-column">
-      <div class="sidebar-brand"><div class="logo"><img src="icons/icon-192.png" alt=""></div> <span id="brand-name">SaleAPP POS</span></div>
+      <div class="sidebar-brand"><div class="logo"><i class="bi bi-plus-lg"></i></div> <span id="brand-name">Shifa Pharmacy</span></div>
       <nav class="nav flex-column flex-grow-1 overflow-auto nav-menu" aria-label="Main"></nav>
     </aside>
     <div class="app-main">
       <header class="app-topbar">
         <button class="btn btn-link text-body d-lg-none px-1" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas" aria-label="Menu"><i class="bi bi-list fs-4"></i></button>
-        <div class="fw-semibold text-truncate flex-grow-1" id="topbar-title">Dashboard</div>
+        <div class="fw-semibold text-truncate flex-grow-1" id="topbar-title">Home</div>
+        <button type="button" class="lang-switch" data-lang-toggle aria-label="Language"><i class="bi bi-translate"></i><span class="lang-label"></span></button>
         <span id="conn-badge" class="badge rounded-pill conn-online" title="Connection status"><i class="bi bi-wifi"></i> <span>Online</span></span>
         <div class="dropdown">
           <button class="avatar-btn ms-1" id="user-avatar" data-bs-toggle="dropdown" aria-label="Account"><i class="bi bi-person"></i></button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><div class="dropdown-item-text small"><div class="fw-semibold" id="user-name"></div><div class="text-body-secondary" id="user-role"></div></div></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#/settings"><i class="bi bi-gear me-2"></i>Settings</a></li>
-            <li><button class="dropdown-item d-none" id="install-btn"><i class="bi bi-download me-2"></i>Install app</button></li>
-            <li><button class="dropdown-item text-danger" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Log out</button></li>
+            <li><a class="dropdown-item" href="#/settings"><i class="bi bi-gear me-2"></i><span data-i18n>Settings</span></a></li>
+            <li><button class="dropdown-item d-none" id="install-btn"><i class="bi bi-download me-2"></i><span data-i18n>Install app</span></button></li>
+            <li><button class="dropdown-item text-danger" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i><span data-i18n>Log out</span></button></li>
           </ul>
         </div>
       </header>
       <main id="content" tabindex="-1"></main>
     </div>
     <nav id="bottom-nav" class="d-lg-none" aria-label="Quick navigation">
-      <a href="#/dashboard" data-route="dashboard"><i class="bi bi-house"></i><span>Home</span></a>
-      <a href="#/sales" data-route="sales"><i class="bi bi-receipt"></i><span>Sales</span></a>
-      <a href="#/pos" data-route="pos" class="nav-sell"><i class="bi bi-cart-plus-fill"></i><span>Sell</span></a>
-      <a href="#/products" data-route="products"><i class="bi bi-box-seam"></i><span>Products</span></a>
-      <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas"><i class="bi bi-grid"></i><span>More</span></a>
+      <a href="#/dashboard" data-route="dashboard"><i class="bi bi-house-heart"></i><span data-i18n>Home</span></a>
+      <a href="#/stock" data-route="stock"><i class="bi bi-capsule"></i><span data-i18n>Stock</span></a>
+      <a href="#/pos" data-route="pos" class="nav-sell"><i class="bi bi-cart-plus-fill"></i><span data-i18n>Sell</span></a>
+      <a href="#/expiry" data-route="expiry"><i class="bi bi-calendar2-x"></i><span data-i18n>Expiry</span><b class="nav-badge d-none" id="nav-expiry-badge"></b></a>
+      <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas"><i class="bi bi-grid"></i><span data-i18n>More</span></a>
     </nav>
   </div>
 
   <div class="offcanvas offcanvas-start" tabindex="-1" id="menu-offcanvas" aria-labelledby="menu-title">
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="menu-title">Menu</h5>
+      <h5 class="offcanvas-title" id="menu-title" data-i18n>Menu</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body p-0"><nav class="nav flex-column nav-menu" aria-label="Main"></nav></div>

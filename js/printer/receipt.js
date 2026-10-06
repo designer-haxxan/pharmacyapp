@@ -2,6 +2,7 @@
 import * as idb from '../db/idb.js';
 import { getSettings } from '../core/settings.js';
 import { fmtNum, fmtQty, fmtDateTime, fmtDate, esc, localDate } from '../core/utils.js';
+import { DIRECTIONS, fmtExpiry } from '../core/pharma.js';
 import { EscPos, isPlain } from './escpos.js';
 import * as Raster from './raster.js';
 
@@ -10,7 +11,7 @@ const TITLES = { sale: 'SALES RECEIPT', purchase: 'PURCHASE', saleReturn: 'SALE 
 export async function buildReceipt(kind, doc) {
   const s = getSettings();
   const b = s.business;
-  const m = { header: [b.name, b.address, b.phone ? 'Tel: ' + b.phone : '', b.taxNo ? 'Tax No: ' + b.taxNo : ''].filter(Boolean), title: TITLES[kind] || kind.toUpperCase(),
+  const m = { header: [b.name, b.nameUr, b.address, b.phone ? 'Tel: ' + b.phone : '', b.licenseNo ? 'Drug Licence: ' + b.licenseNo : '', b.pharmacist ? 'Pharmacist: ' + b.pharmacist : '', b.taxNo ? 'NTN: ' + b.taxNo : ''].filter(Boolean), title: TITLES[kind] || kind.toUpperCase(),
     info: [], items: [], totals: [], footer: b.footer || '', void: doc.status === 'void' };
   const sameDay = doc.createdAt && localDate(new Date(doc.createdAt)) === doc.date;
   m.info.push(['No', doc.number], ['Date', sameDay ? fmtDateTime(doc.createdAt) : fmtDate(doc.date)]);
@@ -21,7 +22,11 @@ export async function buildReceipt(kind, doc) {
     const list = items.length ? items : (doc.voidedItems || []);
     list.sort((a, b) => a.line - b.line);
     m.info.push([kind === 'sale' ? 'Customer' : 'Supplier', kind === 'sale' ? doc.customerName : doc.supplierName]);
-    m.items = list.map((i) => ({ name: i.name, qty: i.qty, unit: i.unit, rate: i.rate, discount: i.discount, amount: i.amount }));
+    const dirUr = Object.fromEntries(DIRECTIONS);
+    m.items = list.map((i) => ({ name: i.name + (i.strength ? ' ' + i.strength : ''), qty: i.qty, unit: i.unit, rate: i.rate, discount: i.discount, amount: i.amount,
+      sub: [s.receiptShowBatch && i.batchNo ? `Batch ${i.batchNo}${i.expiry ? ' Exp ' + fmtExpiry(i.expiry) : ''}` : '', kind === 'sale' && s.receiptShowDirections && i.dir ? (dirUr[i.dir] || i.dir) : ''].filter(Boolean) }));
+    if (kind === 'sale' && doc.rx?.patient) m.info.push(['Patient', doc.rx.patient]);
+    if (kind === 'sale' && doc.rx?.doctor) m.info.push(['Doctor', doc.rx.doctor]);
     m.totals.push(['Subtotal', doc.subtotal]);
     if (doc.discount) m.totals.push(['Discount', -doc.discount]);
     if (doc.tax) m.totals.push([`Tax (${doc.taxRate}%)`, doc.tax]);
@@ -33,7 +38,7 @@ export async function buildReceipt(kind, doc) {
     m.payment = doc.paid ? doc.paymentAccountName : 'Credit';
   } else if (kind === 'saleReturn' || kind === 'purchaseReturn') {
     m.info.push(['Against', doc.docNo], [kind === 'saleReturn' ? 'Customer' : 'Supplier', doc.partyName || '']);
-    m.items = doc.items.map((i) => ({ name: i.name, qty: i.qty, unit: i.unit, rate: i.rate, amount: i.amount }));
+    m.items = doc.items.map((i) => ({ name: i.name, qty: i.qty, unit: i.unit, rate: i.rate, amount: i.amount, sub: [] }));
     m.totals.push(['RETURN TOTAL', doc.total, true]);
     m.totals.push([kind === 'saleReturn' ? 'Refunded' : 'Refund received', doc.refund]);
     m.payment = doc.refund ? doc.refundAccountName : 'Adjusted to account';
@@ -65,6 +70,7 @@ export async function toEscPos(m, width = 58) {
       p.wrap(i.name);
       p.lr(`  ${fmtQty(i.qty)} ${i.unit || ''} x ${fmtNum(i.rate)}`, fmtNum(i.amount));
       if (i.discount) p.lr('  Discount', '-' + fmtNum(i.discount));
+      (i.sub || []).forEach((x) => p.wrap('  ' + x));
     });
   }
   p.hr();
@@ -87,7 +93,7 @@ export function toHTML(m, width = 58) {
     ${m.header.map((h, i) => `<div class="c ${i === 0 ? 'b big' : ''}">${t(h)}</div>`).join('')}
     <hr><div class="c b">${esc(m.title)}</div>${m.void ? '<div class="c b">*** VOID ***</div>' : ''}
     <table>${m.info.map(([k, v]) => row(esc(k) + ':', t(v))).join('')}</table>
-    ${m.items.length ? '<hr><table>' + m.items.map((i) => `<tr><td colspan="2">${t(i.name)}</td></tr>${row(`&nbsp;&nbsp;${fmtQty(i.qty)} ${esc(i.unit || '')} x ${fmtNum(i.rate)}`, fmtNum(i.amount))}${i.discount ? row('&nbsp;&nbsp;Discount', '-' + fmtNum(i.discount)) : ''}`).join('') + '</table>' : ''}
+    ${m.items.length ? '<hr><table>' + m.items.map((i) => `<tr><td colspan="2">${t(i.name)}</td></tr>${row(`&nbsp;&nbsp;${fmtQty(i.qty)} ${esc(i.unit || '')} x ${fmtNum(i.rate)}`, fmtNum(i.amount))}${i.discount ? row('&nbsp;&nbsp;Discount', '-' + fmtNum(i.discount)) : ''}${(i.sub || []).map((x) => `<tr><td colspan="2" class="sm">&nbsp;&nbsp;${t(x)}</td></tr>`).join('')}`).join('') + '</table>' : ''}
     <hr><table>${m.totals.map(([k, v, strong]) => row(esc(k), `${v < 0 ? '-' : ''}${cur} ${fmtNum(Math.abs(v))}`, strong ? 'b' : '')).join('')}
     ${m.payment ? row('Payment', t(m.payment)) : ''}</table>
     ${m.note ? `<hr><div>Note: ${t(m.note)}</div>` : ''}

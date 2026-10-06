@@ -1,13 +1,13 @@
 // JSON backup export, validation and restore (replace or merge). Never includes credentials.
 import * as idb from '../db/idb.js';
-import { DATA_STORES, SYSTEM_ACCOUNTS, LEGACY_DB_NAME } from '../db/schema.js';
+import { DATA_STORES, SYSTEM_ACCOUNTS } from '../db/schema.js';
 import { CONFIG } from '../config.js';
 import { getSettings, replaceSettings } from '../core/settings.js';
 import { nowISO, round3, uuid, AppError } from '../core/utils.js';
 import * as Auth from './auth.js';
 import * as Catalog from './catalog.js';
 
-export const FORMAT = 'saleapp-pos-backup';
+export const FORMAT = 'shifa-pharmacy-backup';
 
 // Required fields per collection (id/key checked separately).
 const REQUIRED = {
@@ -15,6 +15,7 @@ const REQUIRED = {
   sales: ['number', 'date', 'total'], saleItems: ['saleId', 'productId', 'qty'], purchases: ['number', 'date', 'total'], purchaseItems: ['purchaseId', 'productId', 'qty'],
   saleReturns: ['number', 'date', 'saleId', 'items'], purchaseReturns: ['number', 'date', 'purchaseId', 'items'], vouchers: ['number', 'date', 'amount'],
   entries: ['txnId', 'accountId', 'date', 'debit', 'credit'], stockMoves: ['productId', 'date', 'qty', 'refId'], adjustments: ['number', 'date', 'items'],
+  batches: ['productId', 'batchNo', 'expiry', 'qty'], demands: ['name'],
 };
 const DOC_STORES = { sales: ['saleItems', 'saleId'], purchases: ['purchaseItems', 'purchaseId'], saleReturns: null, purchaseReturns: null, vouchers: null, adjustments: null };
 const NUMBERED = ['sales', 'purchases', 'saleReturns', 'purchaseReturns', 'vouchers', 'adjustments'];
@@ -44,7 +45,7 @@ export async function createBackup() {
 export function validateBackup(obj) {
   const errors = []; const warnings = [];
   if (!obj || typeof obj !== 'object') return { ok: false, errors: ['The file is not a valid JSON object.'], warnings };
-  if (obj.format !== FORMAT) errors.push('This file is not a SaleAPP POS backup.');
+  if (obj.format !== FORMAT) errors.push('This file is not a Shifa Pharmacy backup.');
   if (!Number.isInteger(obj.backupVersion)) errors.push('Missing backup version.');
   else if (obj.backupVersion > CONFIG.BACKUP_VERSION) errors.push(`This backup was made by a newer app version (backup v${obj.backupVersion}). Update the app first.`);
   if (obj.schemaVersion > CONFIG.SCHEMA_VERSION) errors.push(`Unsupported database schema version ${obj.schemaVersion}.`);
@@ -87,12 +88,19 @@ export async function verifyChecksum(obj) {
   return h === null ? null : h === obj.checksum;
 }
 
+// Batch quantities come from the stock moves; a medicine's stock is the sum of its batches.
 async function recomputeStock(t) {
-  const sums = {};
-  for (const m of await t.getAll('stockMoves')) sums[m.productId] = round3((sums[m.productId] || 0) + m.qty);
+  const perBatch = {};
+  for (const m of await t.getAll('stockMoves')) if (m.batchId) perBatch[m.batchId] = round3((perBatch[m.batchId] || 0) + m.qty);
+  const perProduct = {};
+  for (const b of await t.getAll('batches')) {
+    const q = perBatch[b.id] || 0;
+    if (b.qty !== q) { b.qty = q; await t.put('batches', b); }
+    perProduct[b.productId] = round3((perProduct[b.productId] || 0) + q);
+  }
   for (const p of await t.getAll('products')) {
-    const s = p.trackStock === false ? 0 : (sums[p.id] || 0);
-    if (p.stock !== s) { p.stock = s; await t.put('products', p); }
+    const sv = p.trackStock === false ? 0 : (perProduct[p.id] || 0);
+    if (p.stock !== sv) { p.stock = sv; await t.put('products', p); }
   }
 }
 async function ensureSystemAccounts(t) {
@@ -153,14 +161,16 @@ export async function restore(obj, mode, { includeSettings = true } = {}) {
         else {
           await t.deleteByIndex('entries', 'txnId', id);
           await t.deleteByIndex('stockMoves', 'refId', id);
+          await t.deleteByIndex('batches', 'srcId', id);
           if (DOC_STORES[store]) await t.deleteByIndex(DOC_STORES[store][0], DOC_STORES[store][1], id);
         }
       }
       for (const e of data.entries) if (useBackup.get(entryParent(e))) await t.put('entries', e);
       for (const m of data.stockMoves) if (useBackup.get(moveParent(m))) await t.put('stockMoves', m);
+      for (const b of data.batches) if (b.srcId && useBackup.get(docParent.get(b.srcId))) await t.put('batches', b);
       for (const i of data.saleItems) if (useBackup.get('sales:' + i.saleId)) await t.put('saleItems', i);
       for (const i of data.purchaseItems) if (useBackup.get('purchases:' + i.purchaseId)) await t.put('purchaseItems', i);
-      for (const s of ['categories', 'holds', 'auditLog']) {
+      for (const s of ['categories', 'holds', 'auditLog', 'demands']) {
         for (const r of data[s]) { const local = await t.get(s, r.id); if (!local || stamp(r) > stamp(local)) await t.put(s, r); }
       }
       for (const m of data.meta) {
@@ -177,45 +187,4 @@ export async function restore(obj, mode, { includeSettings = true } = {}) {
   await Catalog.load();
   document.dispatchEvent(new CustomEvent('data:changed'));
   return report;
-}
-
-// ---------- Old shared database ----------
-// Older builds (and copies of this app such as AgriSale / pharmaSaleApp) used one database, "saleapp_pos",
-// on the shared designer-haxxan.github.io origin. It is never modified here; it can be imported (merged) once
-// after the user reviews its record counts.
-export async function legacyDataExists() {
-  if (!indexedDB.databases) return false;
-  try { return (await indexedDB.databases()).some((d) => d.name === LEGACY_DB_NAME); } catch { return false; }
-}
-
-// Returns a backup-shaped object with the old data, or null if there is nothing to import.
-export async function readLegacyData() {
-  if (!(await legacyDataExists())) return null;
-  let db;
-  try {
-    db = await new Promise((res, rej) => {
-      const r = indexedDB.open(LEGACY_DB_NAME); // no version: open as-is, never upgrade it
-      r.onupgradeneeded = () => r.transaction.abort(); // it did not exist after all: don't create it
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
-    });
-  } catch { return null; }
-  try {
-    db.onversionchange = () => db.close();
-    const stores = DATA_STORES.filter((s) => db.objectStoreNames.contains(s));
-    const data = {};
-    if (stores.length) {
-      await new Promise((res, rej) => {
-        const t = db.transaction(stores, 'readonly');
-        for (const s of stores) { const r = t.objectStore(s).getAll(); r.onsuccess = () => { data[s] = r.result; }; }
-        t.oncomplete = res; t.onerror = () => rej(t.error);
-      });
-    }
-    for (const s of DATA_STORES) data[s] ||= [];
-    const counts = Object.fromEntries(DATA_STORES.map((s) => [s, data[s].length]));
-    const business = ['products', 'customers', 'suppliers', 'sales', 'purchases', 'vouchers'].reduce((n, s) => n + counts[s], 0);
-    if (!business) return null;
-    return { format: FORMAT, backupVersion: CONFIG.BACKUP_VERSION, appVersion: `shared database v${db.version}`, schemaVersion: CONFIG.SCHEMA_VERSION,
-      createdAt: nowISO(), counts, data };
-  } finally { db.close(); }
 }
