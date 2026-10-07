@@ -579,3 +579,8 @@ button.list-row { width: 100%; background: none; border-left: 0; border-right: 0
 .print-report th, .print-report td { border: 1px solid #999; padding: 3px 5px; }
 .print-report td.num, .print-report th.num { text-align: right; }
 .receipt-preview { background: #fff; padding: 12px 6px; border-radius: 8px; border: 1px solid var(--bs-border-color); overflow-x: auto; }
+
+/* Login link auto-fill hint */
+.autofill-hint { background: #fff7d6; color: #6b4e00; border: 1px solid #f3d36b; border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; text-align: center; font-size: 1.05rem; line-height: 1.9; font-family: 'Jameel Noori Nastaleeq', sans-serif; }
+@keyframes attention { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, .7); } 50% { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); } }
+.btn-attention { animation: attention 1.3s ease-in-out infinite; }
